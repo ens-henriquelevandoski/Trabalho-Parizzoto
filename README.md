@@ -49,4 +49,3 @@ Cada branch foi integrada à `main` por meio de Pull Request no GitHub.
 ## Autor
 
 **Henrique Levandoski**  
-Acadêmico da UGV
