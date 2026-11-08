@@ -1,0 +1,1908 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#d90429">
+    <title>Loja de Brinquedos</title>
+
+    <!-- Fonte Rubik (com alternativas caso esteja sem internet) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* =====================================================
+           PALETA: vermelho, preto e branco
+           ESTRUTURA: loja virtual de brinquedos (aviso, busca,
+           categorias, compra por idade, mais vendidos...)
+           ASSINATURA: tudo é uma peça de montar. Foto, cards,
+           faixas etárias e rodapé são "tijolos" com pinos.
+           ===================================================== */
+        :root {
+            --vermelho: #d90429;
+            --vermelho-escuro: #a60320;
+            --vermelho-pino: #e8183b;
+            --vermelho-claro: #ff4d63;   /* texto vermelho sobre fundo preto */
+            --vermelho-suave: #ffd9de;
+            --preto: #000000;
+            --branco: #ffffff;
+            --cinza-claro: #f3f3f3;
+            --texto: #161616;
+            --texto-suave: #4a4a4a;
+
+            --borda: 3px solid var(--preto);
+            --sombra: 6px 6px 0 var(--preto);
+            --margem: max(40px, calc((100% - 1100px) / 2));
+            --secao: 88px;
+
+            --fonte: "Rubik", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+
+            /* pinos de peça de montar (uma fileira, repetida na horizontal) */
+            --pinos-branco: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='22'%3E%3Crect x='11' y='3' width='38' height='24' rx='8' fill='%23ffffff' stroke='%23000000' stroke-width='3'/%3E%3C/svg%3E");
+            --pinos-vermelho: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='22'%3E%3Crect x='11' y='3' width='38' height='24' rx='8' fill='%23d90429' stroke='%23000000' stroke-width='3'/%3E%3C/svg%3E");
+            --pinos-preto: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='22'%3E%3Crect x='11' y='3' width='38' height='24' rx='8' fill='%23000000' stroke='%23000000' stroke-width='3'/%3E%3C/svg%3E");
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--fonte);
+            background-color: var(--branco);
+            color: var(--texto);
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        h1, h2, h3 {
+            font-weight: 900;
+            line-height: 1.1;
+            letter-spacing: -0.5px;
+        }
+
+        a:focus-visible,
+        summary:focus-visible,
+        button:focus-visible,
+        input:focus-visible {
+            outline: 4px solid var(--vermelho);
+            outline-offset: 3px;
+        }
+
+        .so-leitor {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+        }
+
+        /* fileira de pinos no topo de um "tijolo" */
+        .foto::before,
+        .card::before,
+        .idade-lista a::before,
+        footer::before {
+            content: "";
+            position: absolute;
+            top: -19px;
+            left: 16px;
+            right: 16px;
+            height: 22px;
+            background-repeat: repeat-x;
+            background-position: center bottom;
+            pointer-events: none;
+        }
+
+        /* ---------- BOTÕES ---------- */
+        .botao {
+            display: inline-block;
+            padding: 15px 34px;
+            font-family: var(--fonte);
+            font-size: 18px;
+            font-weight: 800;
+            text-align: center;
+            text-decoration: none;
+            border: 3px solid var(--preto);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s, color 0.2s, border-color 0.2s;
+        }
+
+        .botao-branco {
+            color: var(--preto);
+            background-color: var(--branco);
+            box-shadow: 4px 4px 0 var(--preto);
+        }
+
+        .botao-branco:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--preto);
+        }
+
+        .botao-contorno {
+            color: var(--branco);
+            background-color: transparent;
+            border-color: var(--branco);
+        }
+
+        .botao-contorno:hover {
+            color: var(--branco);
+            background-color: var(--preto);
+            border-color: var(--preto);
+        }
+
+        .botao-vermelho {
+            color: var(--branco);
+            background-color: var(--vermelho);
+            border-color: var(--branco);
+        }
+
+        .botao-vermelho:hover {
+            color: var(--preto);
+            background-color: var(--branco);
+            transform: translateY(-3px);
+        }
+
+        .botao-compra {
+            display: block;
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 16px;
+            color: var(--branco);
+            background-color: var(--vermelho);
+        }
+
+        .botao-compra:hover {
+            background-color: var(--preto);
+        }
+
+        /* ---------- AVISO NO TOPO ---------- */
+        .aviso {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2px 24px;
+            padding: 9px var(--margem);
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--branco);
+            background-color: var(--vermelho);
+        }
+
+        .aviso span::after {
+            content: "";
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            margin-left: 24px;
+            vertical-align: middle;
+            background-color: var(--preto);
+            border-radius: 2px;
+        }
+
+        .aviso span:last-child::after {
+            display: none;
+        }
+
+        /* ---------- CABEÇALHO ---------- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            padding: 18px var(--margem);
+            background-color: var(--preto);
+        }
+
+        .logo {
+            padding: 12px 28px;
+            font-size: 26px;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            color: var(--branco);
+            background-color: var(--vermelho);
+            border: 3px solid var(--branco);
+            border-radius: 12px;
+        }
+
+        .busca {
+            display: flex;
+            flex: 1;
+            max-width: 520px;
+            padding: 4px;
+            background-color: var(--branco);
+            border-radius: 50px;
+        }
+
+        .busca:focus-within {
+            outline: 4px solid var(--vermelho-claro);
+            outline-offset: 2px;
+        }
+
+        .busca input {
+            flex: 1;
+            min-width: 0;
+            padding: 10px 18px;
+            font-family: var(--fonte);
+            font-size: 16px;
+            color: var(--preto);
+            background: transparent;
+            border: 0;
+            outline: none;
+        }
+
+        .busca button {
+            padding: 10px 24px;
+            font-family: var(--fonte);
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--branco);
+            background-color: var(--vermelho);
+            border: 0;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .busca button:hover {
+            background-color: var(--vermelho-escuro);
+        }
+
+        .informacao {
+            padding: 6px 14px;
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            color: var(--branco);
+            border: 2px solid var(--branco);
+            border-radius: 50px;
+        }
+
+        /* ---------- MENU ---------- */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px var(--margem);
+            background-color: var(--branco);
+            border-top: 8px solid var(--vermelho);
+            border-bottom: var(--borda);
+        }
+
+        nav a {
+            padding: 9px 20px;
+            font-size: 16px;
+            font-weight: 700;
+            white-space: nowrap;
+            color: var(--preto);
+            text-decoration: none;
+            border-radius: 50px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        nav a:hover,
+        nav a[aria-current="page"] {
+            color: var(--branco);
+            background-color: var(--vermelho);
+        }
+
+        nav a.carrinho {
+            margin-left: 10px;
+            color: var(--branco);
+            background-color: var(--preto);
+        }
+
+        nav a.carrinho:hover {
+            background-color: var(--vermelho);
+        }
+
+        /* ---------- CORPO (DESTAQUE PRINCIPAL) ---------- */
+        main {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 72px;
+            padding: 88px var(--margem) 96px;
+            color: var(--branco);
+            background-color: var(--vermelho);
+            /* pinos em relevo no fundo */
+            background-image: radial-gradient(circle, var(--vermelho-pino) 0 13px, var(--vermelho-escuro) 14px 16px, transparent 17px);
+            background-size: 60px 60px;
+            border-bottom: var(--borda);
+        }
+
+        .texto {
+            flex: 1;
+            max-width: 600px;
+        }
+
+        .texto h2 {
+            margin-bottom: 24px;
+            font-size: clamp(34px, 5.2vw, 62px);
+            color: var(--branco);
+            text-shadow: 4px 4px 0 var(--preto);
+        }
+
+        .texto p {
+            margin-bottom: 36px;
+            font-size: 21px;
+            line-height: 1.7;
+            color: var(--branco);
+        }
+
+        .acoes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        /* a foto é um tijolo com pinos em cima */
+        .foto {
+            position: relative;
+            flex-shrink: 0;
+            width: 380px;
+            max-width: 100%;
+            padding: 12px;
+            background-color: var(--branco);
+            border: var(--borda);
+            border-radius: 18px;
+            box-shadow: 10px 10px 0 var(--preto);
+            transform: rotate(-2.5deg);
+        }
+
+        .foto::before {
+            background-image: var(--pinos-branco);
+        }
+
+        .foto img {
+            display: block;
+            width: 100%;
+            border: var(--borda);
+            border-radius: 10px;
+        }
+
+        .selo {
+            position: absolute;
+            right: -26px;
+            bottom: -26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 116px;
+            height: 116px;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 800;
+            line-height: 1.2;
+            text-align: center;
+            color: var(--branco);
+            background-color: var(--preto);
+            border: 3px solid var(--branco);
+            border-radius: 50%;
+            transform: rotate(14deg);
+        }
+
+        /* ---------- FAIXA DE CATEGORIAS (ROLANDO) ---------- */
+        .faixa {
+            overflow: hidden;
+            padding: 18px 0;
+            color: var(--branco);
+            background-color: var(--preto);
+        }
+
+        .faixa-trilho {
+            display: flex;
+            width: max-content;
+            animation: correr 32s linear infinite;
+        }
+
+        .faixa-trilho span {
+            display: flex;
+            align-items: center;
+            padding-right: 32px;
+            font-size: 20px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .faixa-trilho span::after {
+            content: "";
+            width: 12px;
+            height: 12px;
+            margin-left: 32px;
+            background-color: var(--vermelho);
+            border-radius: 3px;
+        }
+
+        @keyframes correr {
+            from { transform: translateX(0); }
+            to   { transform: translateX(-50%); }
+        }
+
+        /* ---------- TÍTULOS DE SEÇÃO ---------- */
+        .idade h2,
+        .destaques h2,
+        .produtos h2,
+        .localizacao h2,
+        .faq h2 {
+            margin-bottom: 48px;
+            font-size: 42px;
+            color: var(--preto);
+        }
+
+        .idade h2::after,
+        .destaques h2::after,
+        .produtos h2::after,
+        .localizacao h2::after,
+        .faq h2::after {
+            content: "";
+            display: block;
+            width: 80px;
+            height: 8px;
+            margin-top: 16px;
+            background-color: var(--vermelho);
+            border-radius: 4px;
+        }
+
+        .idade h2,
+        .destaques h2,
+        .produtos h2 {
+            text-align: center;
+        }
+
+        .idade h2::after,
+        .destaques h2::after,
+        .produtos h2::after {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ---------- COMPRE POR IDADE ---------- */
+        .idade {
+            padding: var(--secao) var(--margem);
+            background-color: var(--branco);
+        }
+
+        .idade-lista {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 32px;
+            padding-top: 22px;
+        }
+
+        .idade-lista a {
+            position: relative;
+            display: block;
+            padding: 32px 16px 26px;
+            text-align: center;
+            color: var(--preto);
+            text-decoration: none;
+            background-color: var(--branco);
+            border: var(--borda);
+            border-radius: 18px;
+            box-shadow: var(--sombra);
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s, color 0.2s;
+        }
+
+        .idade-lista a::before {
+            background-image: var(--pinos-vermelho);
+        }
+
+        .idade-lista a:hover {
+            color: var(--branco);
+            background-color: var(--vermelho);
+            transform: translate(-3px, -3px);
+            box-shadow: 9px 9px 0 var(--preto);
+        }
+
+        .idade-lista .emoji {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 38px;
+            line-height: 1.2;
+        }
+
+        .idade-lista .faixa-etaria {
+            display: block;
+            font-size: 44px;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: -1px;
+            color: var(--vermelho);
+        }
+
+        .idade-lista .anos {
+            display: block;
+            margin-top: 4px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .idade-lista .descricao {
+            display: block;
+            margin-top: 8px;
+            font-size: 15px;
+            line-height: 1.4;
+            color: var(--texto-suave);
+        }
+
+        .idade-lista a:hover .faixa-etaria,
+        .idade-lista a:hover .descricao {
+            color: var(--branco);
+        }
+
+        /* ---------- DESTAQUES ---------- */
+        .destaques {
+            padding: var(--secao) var(--margem);
+            background-color: var(--cinza-claro);
+            border-top: var(--borda);
+            border-bottom: var(--borda);
+        }
+
+        .cards {
+            display: flex;
+            gap: 36px;
+            padding-top: 22px;
+        }
+
+        .card {
+            position: relative;
+            flex: 1;
+            padding: 44px 28px 40px;
+            text-align: center;
+            color: var(--preto);
+            background-color: var(--branco);
+            border: var(--borda);
+            border-radius: 18px;
+            box-shadow: var(--sombra);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card::before {
+            background-image: var(--pinos-branco);
+        }
+
+        .card:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: 9px 9px 0 var(--preto);
+        }
+
+        .card:nth-child(1) {
+            color: var(--branco);
+            background-color: var(--vermelho);
+        }
+
+        .card:nth-child(1)::before {
+            background-image: var(--pinos-vermelho);
+        }
+
+        .card:nth-child(2) {
+            color: var(--branco);
+            background-color: var(--preto);
+            box-shadow: 6px 6px 0 var(--vermelho);
+        }
+
+        .card:nth-child(2)::before {
+            background-image: var(--pinos-preto);
+        }
+
+        .card:nth-child(2):hover {
+            box-shadow: 9px 9px 0 var(--vermelho);
+        }
+
+        .card .icone {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 24px;
+            font-size: 48px;
+            background-color: var(--branco);
+            border: var(--borda);
+            border-radius: 50%;
+        }
+
+        .card h3 {
+            margin-bottom: 12px;
+            font-size: 24px;
+            color: inherit;
+        }
+
+        .card p {
+            font-size: 17px;
+            line-height: 1.65;
+            color: inherit;
+        }
+
+        .card:nth-child(3) p {
+            color: var(--texto-suave);
+        }
+
+        /* ---------- MAIS VENDIDOS ---------- */
+        .produtos {
+            padding: var(--secao) var(--margem);
+            background-color: var(--branco);
+        }
+
+        .produtos-lista {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 28px;
+        }
+
+        .produto {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-color: var(--branco);
+            border: var(--borda);
+            border-radius: 18px;
+            box-shadow: 5px 5px 0 var(--preto);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .produto:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: 8px 8px 0 var(--preto);
+        }
+
+        .produto-img {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 190px;
+            font-size: 88px;
+            line-height: 1;
+            background-color: var(--cinza-claro);
+            border-bottom: var(--borda);
+        }
+
+        .etiqueta {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 3px 12px;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.5;
+            color: var(--branco);
+            background-color: var(--vermelho);
+            border: 2px solid var(--preto);
+            border-radius: 50px;
+        }
+
+        .etiqueta-preta {
+            background-color: var(--preto);
+        }
+
+        .produto-info {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            padding: 18px 18px 20px;
+        }
+
+        .produto h3 {
+            margin-bottom: 10px;
+            font-size: 18px;
+            line-height: 1.25;
+            color: var(--preto);
+        }
+
+        .preco {
+            font-size: 26px;
+            font-weight: 900;
+            line-height: 1.2;
+            color: var(--preto);
+        }
+
+        .preco-antigo {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: line-through;
+            color: var(--texto-suave);
+        }
+
+        .parcela {
+            margin: 2px 0 16px;
+            font-size: 14px;
+            color: var(--texto-suave);
+        }
+
+        .produto .botao-compra {
+            margin-top: auto;
+        }
+
+        .ver-todos {
+            margin-top: 48px;
+            text-align: center;
+        }
+
+        /* ---------- CHAMADA PARA AÇÃO ---------- */
+        .chamada {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            align-items: center;
+            gap: 56px;
+            padding: 88px var(--margem);
+            color: var(--branco);
+            background-color: var(--preto);
+            background-image: radial-gradient(circle, #1b1b1b 0 13px, #2a2a2a 14px 16px, transparent 17px);
+            background-size: 60px 60px;
+            border-top: 8px solid var(--vermelho);
+        }
+
+        .chamada h2 {
+            font-size: clamp(30px, 4.6vw, 54px);
+            color: var(--branco);
+        }
+
+        .chamada .conteudo p {
+            margin-bottom: 30px;
+            font-size: 20px;
+            line-height: 1.65;
+            color: var(--branco);
+        }
+
+        /* ---------- BENEFÍCIOS ---------- */
+        .beneficios {
+            padding: 64px var(--margem);
+            background-color: var(--branco);
+        }
+
+        .beneficios-lista {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 28px;
+        }
+
+        .beneficio {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .beneficio .icone-b {
+            display: flex;
+            flex: none;
+            align-items: center;
+            justify-content: center;
+            width: 66px;
+            height: 66px;
+            font-size: 30px;
+            background-color: var(--vermelho-suave);
+            border: var(--borda);
+            border-radius: 50%;
+        }
+
+        .beneficio h3 {
+            margin-bottom: 2px;
+            font-size: 18px;
+            color: var(--preto);
+        }
+
+        .beneficio p {
+            font-size: 15px;
+            line-height: 1.4;
+            color: var(--texto-suave);
+        }
+
+        /* ---------- LOCALIZAÇÃO (GRID) ---------- */
+        .localizacao {
+            padding: var(--secao) var(--margem);
+            background-color: var(--cinza-claro);
+            border-top: var(--borda);
+            border-bottom: var(--borda);
+        }
+
+        .localizacao-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: stretch;
+        }
+
+        .mapa svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+            border: var(--borda);
+            border-radius: 18px;
+            box-shadow: var(--sombra);
+        }
+
+        .endereco {
+            padding: 36px;
+            background-color: var(--branco);
+            border: var(--borda);
+            border-left: 14px solid var(--vermelho);
+            border-radius: 18px;
+            box-shadow: var(--sombra);
+        }
+
+        .endereco h3 {
+            margin-bottom: 20px;
+            font-size: 28px;
+            color: var(--preto);
+        }
+
+        .endereco p {
+            margin-bottom: 12px;
+            font-size: 18px;
+            line-height: 1.6;
+            color: var(--texto-suave);
+        }
+
+        .endereco p:last-child {
+            margin-bottom: 0;
+        }
+
+        .endereco strong {
+            color: var(--preto);
+        }
+
+        /* ---------- PERGUNTAS FREQUENTES (FAQ) ---------- */
+        .faq {
+            display: grid;
+            grid-template-columns: 1fr 1.7fr;
+            gap: 64px;
+            align-items: start;
+            padding: var(--secao) var(--margem);
+            background-color: var(--branco);
+        }
+
+        .faq-topo {
+            position: sticky;
+            top: 100px;
+        }
+
+        .faq h2 {
+            margin-bottom: 24px;
+        }
+
+        .faq-intro {
+            max-width: 420px;
+            color: var(--texto-suave);
+        }
+
+        .faq-lista {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .faq details {
+            background-color: var(--branco);
+            border: var(--borda);
+            border-radius: 16px;
+            box-shadow: 4px 4px 0 var(--preto);
+        }
+
+        .faq details[open] {
+            border-left: 14px solid var(--vermelho);
+        }
+
+        .faq summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 20px 24px;
+            font-size: 19px;
+            font-weight: 700;
+            line-height: 1.4;
+            color: var(--preto);
+            cursor: pointer;
+            list-style: none;
+            border-radius: 13px;
+        }
+
+        .faq summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .faq summary::after {
+            content: "+";
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--branco);
+            background-color: var(--vermelho);
+            border-radius: 50%;
+        }
+
+        .faq details[open] summary::after {
+            content: "–";
+            background-color: var(--preto);
+        }
+
+        .faq summary:hover {
+            color: var(--vermelho);
+        }
+
+        .faq details p {
+            padding: 0 24px 22px;
+            font-size: 17px;
+            line-height: 1.7;
+            color: var(--texto-suave);
+        }
+
+        .faq details[open] p {
+            animation: abrir 0.3s ease;
+        }
+
+        @keyframes abrir {
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: none; }
+        }
+
+        /* ---------- NEWSLETTER ---------- */
+        .newsletter {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+            align-items: center;
+            padding: 72px var(--margem) 96px;
+            color: var(--branco);
+            background-color: var(--vermelho);
+            background-image: radial-gradient(circle, var(--vermelho-pino) 0 13px, var(--vermelho-escuro) 14px 16px, transparent 17px);
+            background-size: 60px 60px;
+            border-top: var(--borda);
+        }
+
+        .newsletter h2 {
+            margin-bottom: 10px;
+            font-size: clamp(28px, 3.6vw, 42px);
+            color: var(--branco);
+            text-shadow: 3px 3px 0 var(--preto);
+        }
+
+        .newsletter p {
+            font-size: 18px;
+            color: var(--branco);
+        }
+
+        .newsletter form {
+            display: flex;
+            gap: 12px;
+        }
+
+        .newsletter input {
+            flex: 1;
+            min-width: 0;
+            padding: 15px 22px;
+            font-family: var(--fonte);
+            font-size: 17px;
+            color: var(--preto);
+            background-color: var(--branco);
+            border: var(--borda);
+            border-radius: 50px;
+        }
+
+        .newsletter input::placeholder {
+            color: #666666;
+        }
+
+        .newsletter button {
+            padding: 15px 30px;
+            font-family: var(--fonte);
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--branco);
+            background-color: var(--preto);
+            border: var(--borda);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .newsletter button:hover {
+            color: var(--preto);
+            background-color: var(--branco);
+        }
+
+        /* ---------- RODAPÉ (OUTRO TIJOLO) ---------- */
+        footer {
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 40px;
+            padding: 64px var(--margem) 32px;
+            color: var(--branco);
+            background-color: var(--preto);
+        }
+
+        footer::before {
+            left: 0;
+            right: 0;
+            background-image: var(--pinos-preto);
+        }
+
+        .rodape-marca {
+            max-width: 300px;
+        }
+
+        .rodape-marca .logo {
+            display: inline-block;
+            margin: 0 0 16px;
+        }
+
+        footer h3 {
+            margin-bottom: 16px;
+            font-size: 20px;
+            color: var(--branco);
+        }
+
+        footer p {
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        footer a {
+            font-weight: 500;
+            color: var(--vermelho-claro);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: var(--branco);
+            text-decoration: underline;
+        }
+
+        .rodape-final {
+            flex: 0 0 100%;
+            margin-top: 8px;
+            padding-top: 24px;
+            font-size: 14px;
+            text-align: center;
+            color: #bdbdbd;
+            border-top: 1px solid #333333;
+        }
+
+        .rodape-final p {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        /* ---------- TABLET ---------- */
+        @media screen and (max-width: 1000px) {
+            .produtos-lista {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .idade-lista {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .beneficios-lista {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            :root {
+                --margem: 20px;
+                --secao: 56px;
+                --sombra: 5px 5px 0 var(--preto);
+            }
+
+            body {
+                font-size: 15px;
+            }
+
+            header,
+            nav,
+            main,
+            footer {
+                text-align: center;
+            }
+
+            .aviso {
+                font-size: 12px;
+                gap: 0 16px;
+            }
+
+            .aviso span::after {
+                margin-left: 16px;
+            }
+
+            header {
+                flex-wrap: wrap;
+                justify-content: center;
+                padding: 14px 20px;
+            }
+
+            .busca {
+                order: 3;
+                flex: 0 0 100%;
+                max-width: none;
+            }
+
+            .informacao {
+                font-size: 14px;
+                padding: 6px 12px;
+            }
+
+            /* menu deixa de ficar fixo para não ocupar a tela */
+            nav {
+                position: static;
+                flex-wrap: wrap;
+                padding: 10px 20px;
+            }
+
+            nav a {
+                font-size: 15px;
+                padding: 8px 16px;
+            }
+
+            nav a.carrinho {
+                margin-left: 0;
+            }
+
+            /* imagem abaixo do texto */
+            main {
+                flex-direction: column-reverse;
+                gap: 56px;
+                padding: 56px 20px 64px;
+            }
+
+            .texto h2 {
+                font-size: 30px;
+                text-shadow: 3px 3px 0 var(--preto);
+            }
+
+            .texto p {
+                margin-bottom: 28px;
+                font-size: 16px;
+            }
+
+            .acoes {
+                justify-content: center;
+            }
+
+            .botao {
+                padding: 13px 28px;
+                font-size: 16px;
+            }
+
+            .foto {
+                width: 280px;
+                padding: 10px;
+                box-shadow: 8px 8px 0 var(--preto);
+            }
+
+            .selo {
+                right: -18px;
+                bottom: -18px;
+                width: 92px;
+                height: 92px;
+                font-size: 12px;
+            }
+
+            .faixa {
+                padding: 14px 0;
+            }
+
+            .faixa-trilho span {
+                font-size: 16px;
+                padding-right: 22px;
+            }
+
+            .faixa-trilho span::after {
+                margin-left: 22px;
+                width: 9px;
+                height: 9px;
+            }
+
+            .idade h2,
+            .destaques h2,
+            .produtos h2,
+            .localizacao h2,
+            .faq h2 {
+                margin-bottom: 32px;
+                font-size: 28px;
+                text-align: center;
+            }
+
+            .localizacao h2::after,
+            .faq h2::after {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .idade-lista {
+                gap: 40px 24px;
+            }
+
+            .idade-lista .faixa-etaria {
+                font-size: 36px;
+            }
+
+            /* destaques: cards empilhados */
+            .cards {
+                flex-direction: column;
+                gap: 44px;
+            }
+
+            .card {
+                padding: 38px 22px 30px;
+            }
+
+            .card h3 {
+                font-size: 20px;
+            }
+
+            .card p {
+                font-size: 16px;
+            }
+
+            .produtos-lista {
+                gap: 22px;
+            }
+
+            .produto-img {
+                height: 160px;
+                font-size: 72px;
+            }
+
+            .ver-todos {
+                margin-top: 36px;
+            }
+
+            .chamada {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 56px 20px;
+                text-align: center;
+            }
+
+            .chamada h2 {
+                font-size: 28px;
+            }
+
+            .chamada .conteudo p {
+                margin-bottom: 24px;
+                font-size: 16px;
+            }
+
+            .beneficios {
+                padding: 48px 20px;
+            }
+
+            .beneficio {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+
+            .localizacao-grid {
+                gap: 22px;
+            }
+
+            .endereco {
+                padding: 24px;
+                text-align: left;
+            }
+
+            .endereco h3 {
+                font-size: 21px;
+            }
+
+            .endereco p {
+                font-size: 16px;
+            }
+
+            /* perguntas: título em cima, lista embaixo */
+            .faq {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .faq-topo {
+                position: static;
+                text-align: center;
+            }
+
+            .faq h2 {
+                margin-bottom: 16px;
+            }
+
+            .faq-intro {
+                max-width: none;
+                margin: 0 auto 28px;
+            }
+
+            .faq summary {
+                padding: 16px 18px;
+                font-size: 17px;
+            }
+
+            .faq details p {
+                padding: 0 18px 18px;
+                font-size: 16px;
+            }
+
+            .newsletter {
+                grid-template-columns: 1fr;
+                gap: 24px;
+                padding: 52px 20px 72px;
+                text-align: center;
+            }
+
+            .newsletter h2 {
+                font-size: 28px;
+            }
+
+            .newsletter p {
+                font-size: 16px;
+            }
+
+            footer {
+                justify-content: center;
+                padding: 48px 20px 28px;
+            }
+
+            .rodape-marca {
+                max-width: 100%;
+            }
+        }
+
+        /* ---------- CELULAR ---------- */
+        @media screen and (max-width: 425px) {
+            :root {
+                --margem: 16px;
+                --secao: 48px;
+                --sombra: 4px 4px 0 var(--preto);
+            }
+
+            .aviso span:nth-child(3) {
+                display: none;
+            }
+
+            .aviso span:nth-child(2)::after {
+                display: none;
+            }
+
+            /* logo menor */
+            .logo {
+                padding: 10px 18px;
+                font-size: 16px;
+            }
+
+            /* remove Informação 1 e 2 */
+            .informacao {
+                display: none;
+            }
+
+            header {
+                gap: 14px;
+            }
+
+            .busca button {
+                padding: 10px 18px;
+            }
+
+            /* menu em uma linha que rola para o lado */
+            nav {
+                flex-wrap: nowrap;
+                justify-content: flex-start;
+                overflow-x: auto;
+                padding: 10px 16px;
+                scrollbar-width: none;
+            }
+
+            nav::-webkit-scrollbar {
+                display: none;
+            }
+
+            main {
+                gap: 48px;
+                padding: 44px 16px 56px;
+            }
+
+            .texto h2 {
+                font-size: 26px;
+            }
+
+            .acoes {
+                flex-direction: column;
+            }
+
+            .botao {
+                display: block;
+                width: 100%;
+            }
+
+            .foto {
+                width: 240px;
+                box-shadow: 6px 6px 0 var(--preto);
+            }
+
+            .idade h2,
+            .destaques h2,
+            .produtos h2,
+            .localizacao h2,
+            .faq h2 {
+                font-size: 24px;
+            }
+
+            .idade-lista {
+                gap: 36px 18px;
+            }
+
+            .idade-lista a {
+                padding: 24px 10px 20px;
+            }
+
+            .idade-lista .emoji {
+                font-size: 30px;
+            }
+
+            .idade-lista .faixa-etaria {
+                font-size: 30px;
+            }
+
+            .idade-lista .anos {
+                font-size: 15px;
+            }
+
+            .idade-lista .descricao {
+                font-size: 13px;
+            }
+
+            .card .icone {
+                width: 84px;
+                height: 84px;
+                font-size: 40px;
+            }
+
+            /* produtos: duas colunas, como em loja virtual */
+            .produtos-lista {
+                gap: 16px;
+            }
+
+            .produto {
+                box-shadow: 4px 4px 0 var(--preto);
+            }
+
+            .produto-img {
+                height: 120px;
+                font-size: 56px;
+            }
+
+            .etiqueta {
+                top: 8px;
+                left: 8px;
+                padding: 2px 8px;
+                font-size: 11px;
+            }
+
+            .produto-info {
+                padding: 12px 12px 14px;
+            }
+
+            .produto h3 {
+                font-size: 15px;
+            }
+
+            .preco {
+                font-size: 20px;
+            }
+
+            .preco-antigo,
+            .parcela {
+                font-size: 12px;
+            }
+
+            .produto .botao-compra {
+                padding: 10px 12px;
+                font-size: 14px;
+            }
+
+            .chamada h2 {
+                font-size: 24px;
+            }
+
+            .beneficios-lista {
+                gap: 22px 14px;
+            }
+
+            .beneficio .icone-b {
+                width: 56px;
+                height: 56px;
+                font-size: 26px;
+            }
+
+            .beneficio h3 {
+                font-size: 15px;
+            }
+
+            .beneficio p {
+                font-size: 13px;
+            }
+
+            /* localização: mapa em cima, informações embaixo */
+            .localizacao-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .endereco {
+                padding: 20px;
+                border-left-width: 10px;
+            }
+
+            .faq details[open] {
+                border-left-width: 10px;
+            }
+
+            .faq summary {
+                gap: 12px;
+                padding: 14px;
+                font-size: 16px;
+            }
+
+            .faq summary::after {
+                width: 28px;
+                height: 28px;
+                font-size: 20px;
+            }
+
+            .faq details p {
+                padding: 0 14px 16px;
+            }
+
+            .newsletter form {
+                flex-direction: column;
+            }
+
+            footer {
+                flex-direction: column;
+                gap: 28px;
+            }
+        }
+
+        /* respeita quem prefere menos movimento */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                transition: none !important;
+                animation: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="aviso">
+        <span>🏬 Retire na loja</span>
+        <span>💳 Parcele em até 10x</span>
+        <span>🎁 Embalagem para presente</span>
+    </div>
+
+    <header>
+        <div class="logo">🧸 Logo</div>
+        <form class="busca" role="search" action="#">
+            <label for="busca-campo" class="so-leitor">Buscar brinquedos</label>
+            <input type="search" id="busca-campo" placeholder="Busque por brinquedo, idade ou jogo">
+            <button type="submit">Buscar</button>
+        </form>
+        <span class="informacao">📍 Informação 1</span>
+        <span class="informacao">📞 Informação 2</span>
+    </header>
+
+    <nav>
+        <a href="#" aria-current="page">🏠 Início</a>
+        <a href="#produtos">🎲 Brinquedos</a>
+        <a href="#idade">🎂 Por idade</a>
+        <a href="#produtos">🏷️ Ofertas</a>
+        <a href="#">ℹ️ Sobre</a>
+        <a href="#localizacao">✉️ Contato</a>
+        <a href="#" class="carrinho" aria-label="Carrinho, 0 itens">🛒 Carrinho (0)</a>
+    </nav>
+
+    <main>
+        <figure class="foto">
+            <img src="img.jpg.webp" alt="Brinquedo Patrulha">
+            <figcaption class="selo">Qualidade e preço justo</figcaption>
+        </figure>
+        <div class="texto">
+            <h2>Bem-vindo à Loja de Brinquedos!</h2>
+            <p>
+                Aqui você encontra os melhores brinquedos para a diversão da
+                criançada. Bonecos, jogos e muito mais, tudo com qualidade e
+                preço justo para fazer a alegria dos pequenos.
+            </p>
+            <div class="acoes">
+                <a href="#produtos" class="botao botao-branco">🎲 Ver brinquedos</a>
+                <a href="#localizacao" class="botao botao-contorno">📍 Onde estamos</a>
+            </div>
+        </div>
+    </main>
+
+    <div class="faixa" aria-hidden="true">
+        <div class="faixa-trilho">
+            <span>Bonecos</span>
+            <span>Jogos</span>
+            <span>Quebra-cabeças</span>
+            <span>Presentes</span>
+            <span>Para todas as idades</span>
+            <span>Bonecos</span>
+            <span>Jogos</span>
+            <span>Quebra-cabeças</span>
+            <span>Presentes</span>
+            <span>Para todas as idades</span>
+        </div>
+    </div>
+
+    <section class="idade" id="idade">
+        <h2>🎂 Compre por idade</h2>
+        <div class="idade-lista">
+            <a href="#produtos">
+                <span class="emoji" aria-hidden="true">🍼</span>
+                <span class="faixa-etaria">0 a 2</span>
+                <span class="anos">anos</span>
+                <span class="descricao">Bebês e primeiros passos</span>
+            </a>
+            <a href="#produtos">
+                <span class="emoji" aria-hidden="true">🧸</span>
+                <span class="faixa-etaria">3 a 5</span>
+                <span class="anos">anos</span>
+                <span class="descricao">Faz de conta e descobertas</span>
+            </a>
+            <a href="#produtos">
+                <span class="emoji" aria-hidden="true">🧩</span>
+                <span class="faixa-etaria">6 a 8</span>
+                <span class="anos">anos</span>
+                <span class="descricao">Jogos e desafios</span>
+            </a>
+            <a href="#produtos">
+                <span class="emoji" aria-hidden="true">🧱</span>
+                <span class="faixa-etaria">9+</span>
+                <span class="anos">anos</span>
+                <span class="descricao">Montagem e estratégia</span>
+            </a>
+        </div>
+    </section>
+
+    <section class="destaques">
+        <h2>🌟 Nossos Destaques</h2>
+        <div class="cards">
+            <article class="card">
+                <div class="icone">🚓</div>
+                <h3>Bonecos e Personagens</h3>
+                <p>Os personagens favoritos da criançada em versões resistentes e cheias de detalhes.</p>
+            </article>
+            <article class="card">
+                <div class="icone">🧩</div>
+                <h3>Jogos e Quebra-cabeças</h3>
+                <p>Diversão que estimula o raciocínio e une toda a família em momentos especiais.</p>
+            </article>
+            <article class="card">
+                <div class="icone">🎁</div>
+                <h3>Presentes Especiais</h3>
+                <p>Embalagem para presente e opções para todas as idades, prontas para surpreender.</p>
+            </article>
+        </div>
+    </section>
+
+    <section class="produtos" id="produtos">
+        <h2>🔥 Mais vendidos</h2>
+        <div class="produtos-lista">
+            <article class="produto">
+                <div class="produto-img">
+                    <span class="etiqueta">Mais vendido</span>
+                    <span role="img" aria-label="Caminhão de bombeiro">🚒</span>
+                </div>
+                <div class="produto-info">
+                    <h3>Caminhão de bombeiro</h3>
+                    <p class="preco">R$ 89,90</p>
+                    <p class="parcela">ou 3x de R$ 29,97 sem juros</p>
+                    <a href="#" class="botao botao-compra">Comprar</a>
+                </div>
+            </article>
+            <article class="produto">
+                <div class="produto-img">
+                    <span class="etiqueta">20% off</span>
+                    <span role="img" aria-label="Quebra-cabeça">🧩</span>
+                </div>
+                <div class="produto-info">
+                    <h3>Quebra-cabeça 200 peças</h3>
+                    <p class="preco"><span class="preco-antigo">R$ 59,90</span>R$ 47,92</p>
+                    <p class="parcela">ou 2x de R$ 23,96 sem juros</p>
+                    <a href="#" class="botao botao-compra">Comprar</a>
+                </div>
+            </article>
+            <article class="produto">
+                <div class="produto-img">
+                    <span class="etiqueta etiqueta-preta">Novo</span>
+                    <span role="img" aria-label="Urso de pelúcia">🧸</span>
+                </div>
+                <div class="produto-info">
+                    <h3>Urso de pelúcia gigante</h3>
+                    <p class="preco">R$ 129,90</p>
+                    <p class="parcela">ou 5x de R$ 25,98 sem juros</p>
+                    <a href="#" class="botao botao-compra">Comprar</a>
+                </div>
+            </article>
+            <article class="produto">
+                <div class="produto-img">
+                    <span role="img" aria-label="Blocos de montar">🧱</span>
+                </div>
+                <div class="produto-info">
+                    <h3>Kit de blocos de montar</h3>
+                    <p class="preco">R$ 74,90</p>
+                    <p class="parcela">ou 3x de R$ 24,97 sem juros</p>
+                    <a href="#" class="botao botao-compra">Comprar</a>
+                </div>
+            </article>
+        </div>
+        <div class="ver-todos">
+            <a href="#" class="botao botao-branco">Ver todos os brinquedos</a>
+        </div>
+    </section>
+
+    <section class="chamada">
+        <h2>Pronto para alegrar o dia da criançada?</h2>
+        <div class="conteudo">
+            <p>
+                Conheça nossa coleção completa de brinquedos e encontre o presente
+                perfeito com ótimos preços e muita qualidade.
+            </p>
+            <a href="#produtos" class="botao botao-vermelho">🎲 Ver brinquedos</a>
+        </div>
+    </section>
+
+    <section class="beneficios" aria-label="Vantagens da loja">
+        <div class="beneficios-lista">
+            <div class="beneficio">
+                <div class="icone-b" aria-hidden="true">🏬</div>
+                <div>
+                    <h3>Retire na loja</h3>
+                    <p>Compre e busque no Centro</p>
+                </div>
+            </div>
+            <div class="beneficio">
+                <div class="icone-b" aria-hidden="true">💳</div>
+                <div>
+                    <h3>Parcele em até 10x</h3>
+                    <p>Sem juros no cartão</p>
+                </div>
+            </div>
+            <div class="beneficio">
+                <div class="icone-b" aria-hidden="true">🎁</div>
+                <div>
+                    <h3>Embalagem para presente</h3>
+                    <p>Pronto para surpreender</p>
+                </div>
+            </div>
+            <div class="beneficio">
+                <div class="icone-b" aria-hidden="true">💬</div>
+                <div>
+                    <h3>Atendimento rápido</h3>
+                    <p>Tire dúvidas pelo WhatsApp</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="localizacao" id="localizacao">
+        <h2>📍 Onde estamos?</h2>
+        <div class="localizacao-grid">
+            <div class="mapa">
+                <svg viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ilustração de mapa com a localização da loja, ao lado da praça central">
+                    <rect width="400" height="280" fill="#ffffff"/>
+                    <!-- quarteirões -->
+                    <rect x="20" y="20" width="130" height="80" rx="8" fill="#eeeeee" stroke="#000000" stroke-width="2"/>
+                    <rect x="210" y="20" width="170" height="80" rx="8" fill="#eeeeee" stroke="#000000" stroke-width="2"/>
+                    <rect x="20" y="170" width="125" height="90" rx="8" fill="#eeeeee" stroke="#000000" stroke-width="2"/>
+                    <!-- praça central -->
+                    <rect x="210" y="170" width="170" height="90" rx="8" fill="#ffd9de" stroke="#000000" stroke-width="2"/>
+                    <circle cx="295" cy="205" r="22" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+                    <text x="295" y="248" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#000000">Praça central</text>
+                    <!-- ruas -->
+                    <rect x="0" y="115" width="400" height="30" fill="#000000"/>
+                    <rect x="165" y="0" width="30" height="280" fill="#000000"/>
+                    <line x1="200" y1="130" x2="400" y2="130" stroke="#ffffff" stroke-width="3" stroke-dasharray="14 10"/>
+                    <line x1="180" y1="0" x2="180" y2="280" stroke="#ffffff" stroke-width="3" stroke-dasharray="14 10"/>
+                    <text x="16" y="134" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#ffffff">Rua das Crianças</text>
+                    <!-- marcador e rótulo -->
+                    <path d="M180 128 C 150 90, 152 62, 180 62 C 208 62, 210 90, 180 128 Z" fill="#d90429" stroke="#ffffff" stroke-width="3"/>
+                    <circle cx="180" cy="86" r="10" fill="#ffffff"/>
+                    <rect x="206" y="46" width="168" height="30" rx="15" fill="#d90429" stroke="#000000" stroke-width="2"/>
+                    <text x="290" y="66" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#ffffff">🧸 Loja de Brinquedos</text>
+                </svg>
+            </div>
+            <div class="endereco">
+                <h3>Venha nos visitar!</h3>
+                <p><strong>Endereço:</strong> Rua das Crianças, 123 – Centro</p>
+                <p><strong>Cidade:</strong> União da Vitória – PR</p>
+                <p><strong>CEP:</strong> 84600-000</p>
+                <p><strong>Referência:</strong> ao lado da praça central</p>
+                <p><strong>Horário:</strong> seg. a sex., das 9h às 18h; sáb., das 9h às 13h</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="faq" id="perguntas" aria-labelledby="faq-titulo">
+        <div class="faq-topo">
+            <h2 id="faq-titulo">❓ Perguntas Frequentes</h2>
+            <p class="faq-intro">Tire suas dúvidas sobre nossos brinquedos, entregas e atendimento. Toque em uma pergunta para ver a resposta.</p>
+        </div>
+
+        <div class="faq-lista">
+            <details>
+                <summary>Para quais idades são os brinquedos da loja?</summary>
+                <p>Temos opções para todas as idades, de bebês a crianças maiores. Cada produto traz na embalagem a faixa etária indicada pelo fabricante, e nossa equipe pode ajudar você a escolher o brinquedo mais adequado.</p>
+            </details>
+
+            <details>
+                <summary>Vocês fazem embalagem para presente?</summary>
+                <p>Sim! Embalamos o brinquedo para presente com carinho. Basta avisar no momento da compra, e deixamos tudo pronto para surpreender a criançada.</p>
+            </details>
+
+            <details>
+                <summary>Quais são os horários de atendimento da loja?</summary>
+                <p>Atendemos de segunda a sexta, das 9h às 18h, e aos sábados, das 9h às 13h. Estamos no Centro de União da Vitória, ao lado da praça central.</p>
+            </details>
+
+            <details>
+                <summary>Posso trocar um brinquedo se a criança não gostar?</summary>
+                <p>Pode sim. Para a troca, é só trazer o produto na embalagem original, sem sinais de uso, junto com a nota fiscal. Se tiver qualquer dúvida, fale com a gente pelo telefone ou e-mail do rodapé.</p>
+            </details>
+        </div>
+    </section>
+
+    <section class="newsletter">
+        <div>
+            <h2>Receba ofertas e novidades</h2>
+            <p>Cadastre seu e-mail e fique por dentro dos lançamentos e promoções da loja.</p>
+        </div>
+        <form action="#">
+            <label for="email-campo" class="so-leitor">Seu e-mail</label>
+            <input type="email" id="email-campo" placeholder="Digite seu e-mail">
+            <button type="submit">Cadastrar</button>
+        </form>
+    </section>
+
+    <footer>
+        <div class="rodape-marca">
+            <div class="logo">🧸 Logo</div>
+            <p>Brinquedos com qualidade e preço justo para a alegria da criançada.</p>
+        </div>
+        <div>
+            <h3>🔗 Links úteis</h3>
+            <p><a href="#">Início</a></p>
+            <p><a href="#produtos">Brinquedos</a></p>
+        </div>
+        <div>
+            <h3>💬 Fale conosco</h3>
+            <p>contato@lojadebrinquedos.com</p>
+            <p>(42) 99999-9999</p>
+        </div>
+        <div>
+            <h3>🌐 Redes sociais</h3>
+            <p><a href="#">Instagram</a></p>
+            <p><a href="#">Facebook</a></p>
+        </div>
+        <div class="rodape-final">
+            <p>© 2026 Loja de Brinquedos. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
